@@ -9,7 +9,7 @@ app = FastAPI(
 )
 
 # ----------------------------------
-# 数据模型定义
+# Data Model Definitions
 # ----------------------------------
 class LaunchTaskRequest(BaseModel):
     taskId: str
@@ -30,7 +30,7 @@ class APIResponse(BaseModel):
 
 
 class QueryStatusResponse(BaseModel):
-    capacity: int = Field(..., description="Max concurrency number of executing tasks")
+    capacity: int = Field(..., description="Maximum number of concurrently executing tasks")
     availableTaskNum: int = Field(..., description="Remaining available task slots")
     runningTasks: List[str] = Field(..., description="Currently running task IDs")
 
@@ -59,15 +59,15 @@ class PETTaskCallbackRequest(BaseModel):
 
 
 # ----------------------------------
-# 内存模拟任务状态
+# In-memory Task State Simulation
 # ----------------------------------
 TASK_CAPACITY = 3
 running_tasks = []
-task_results = {}  # 存储回调结果
+task_results = {}  # Store callback results
 
 
 # ----------------------------------
-# 1️⃣ 启动任务接口
+# 1️⃣ Launch Task API
 # ----------------------------------
 @app.post("/SecretFlow/api/v1/pit-tasks", response_model=APIResponse)
 async def launch_task(request: LaunchTaskRequest):
@@ -84,7 +84,7 @@ async def launch_task(request: LaunchTaskRequest):
 
         return APIResponse(
             code="00",
-            message="query created successfully",
+            message="Query created successfully",
             data={}
         )
 
@@ -97,7 +97,7 @@ async def launch_task(request: LaunchTaskRequest):
 
 
 # ----------------------------------
-# 2️⃣ 查询系统状态接口
+# 2️⃣ Query System Status API
 # ----------------------------------
 @app.get("/SecretFlow/api/v1/status/", response_model=QueryStatusResponse)
 async def query_status():
@@ -118,7 +118,7 @@ async def query_status():
 
 
 # ----------------------------------
-# 3️⃣ 停止任务接口
+# 3️⃣ Stop Task API
 # ----------------------------------
 @app.delete("/SecretFlow/api/v1/{task_id}", response_model=APIResponse)
 async def stop_task(task_id: str):
@@ -126,7 +126,7 @@ async def stop_task(task_id: str):
         if task_id not in running_tasks:
             return APIResponse(
                 code="01",
-                message=f"failed to stop the task {task_id}. Cause: task not found",
+                message=f"Failed to stop the task {task_id}. Cause: Task not found",
                 data={}
             )
 
@@ -135,20 +135,20 @@ async def stop_task(task_id: str):
 
         return APIResponse(
             code="00",
-            message="success",
+            message="Success",
             data={}
         )
 
     except Exception as e:
         return APIResponse(
             code="01",
-            message=f"failed to stop the task {task_id}. Cause: {str(e)}",
+            message=f"Failed to stop the task {task_id}. Cause: {str(e)}",
             data={}
         )
 
 
 # ----------------------------------
-# 4️⃣ PET Task Callback 接口
+# 4️⃣ PET Task Callback API
 # ----------------------------------
 @app.post("/SecretFlow/api/v1/callback", response_model=APIResponse)
 async def pet_task_callback(request: PETTaskCallbackRequest):
@@ -156,7 +156,7 @@ async def pet_task_callback(request: PETTaskCallbackRequest):
     Receive PET Task callback results from PET Platform
     """
     try:
-        # 模拟记录结果
+        # Simulate storing results
         task_results[request.taskId] = {
             "status": request.taskResultStatusCode,
             "message": request.message,
@@ -166,7 +166,7 @@ async def pet_task_callback(request: PETTaskCallbackRequest):
             "results": request.resultValueList
         }
 
-        # 如果任务已完成则移出运行列表
+        # Remove from running list if task completed successfully
         if request.taskId in running_tasks and request.taskResultStatusCode == "00":
             running_tasks.remove(request.taskId)
 
