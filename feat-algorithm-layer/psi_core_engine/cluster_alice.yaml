@@ -1,0 +1,23 @@
+self_party: alice
+
+# Ray Network Configuration
+parties:
+  alice:
+    address: "192.168.241.128:9394"
+    listen_addr: "0.0.0.0:9394"
+  bob:
+    address: "192.168.241.129:9394"
+    listen_addr: "192.168.241.129:9394"
+
+# SPU equipment configuration (for SPU.psi)
+spu_config:
+  nodes:
+    - party: alice
+      address: "192.168.241.128:9400"
+      listen_addr: "0.0.0.0:9400"
+    - party: bob
+      address: "192.168.241.129:9400"
+      listen_addr: "192.168.241.129:9400"
+  runtime_config:
+    protocol: SEMI2K
+    field: FM128
