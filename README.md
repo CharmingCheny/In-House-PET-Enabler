@@ -21,47 +21,46 @@ A comprehensive privacy-preserving tool that automatically detects, redacts, and
 
 ## 🛡️ Overview
 
-**PrivacyGuard** is an enterprise-grade tool designed to protect sensitive information during internal data processing and sharing. It combines multiple redaction strategies with strong encryption to ensure privacy compliance while maintaining data utility for authorized purposes.
-
-**Key Capabilities:**
-- Automated PII (Personally Identifiable Information) detection and classification
-- Multiple redaction techniques: masking, encryption, tokenization
-- Support for various data formats:
-- Comprehensive audit logging for compliance tracking
+The **Internal Privacy-Enhancing Computation Framework** is an enterprise-grade solution custom-built for financial institutions. Based on the open-source SecretFlow platform, it integrates advanced cryptographic protocols to achieve secure and efficient cross-institutional sensitive data collaboration and joint analysis without exposing raw data. This framework is committed to ensuring data sovereignty, regulatory compliance, and laying a solid foundation for future privacy-preserving financial applications.
+Key Capabilities:
+- **Secure Collaboration Foundation:** At its core, it integrates Privacy-Enhancing Technologies (PETs) such as Secure Multi-Party Computation (MPC) and Private Set Intersection (PSI). It supports joint computation on private inputs from multiple parties, suitable for scenarios like federated anti-fraud and joint risk indicator calculation.
+- **Modular Protocol Support:** It features a designed and implemented configurable PSI execution framework, supporting various protocol variants (e.g., ECDH, KKRT, RR22). This allows for flexible selection based on application requirements, balancing speed, scalability, and privacy guarantees.
+- **Financial-Grade Performance and Scalability:** Comprehensive performance evaluation was conducted on simulated financial datasets. It is proven to deliver scalable performance and operational stability with up to $10^6$ records and in 1:1000 asymmetric configurations.
+- **Unified Interface and Task Management:** Utilizing the FastAPI framework, it provides a unified interface layer that abstracts underlying cryptographic complexity, supporting the full lifecycle management of PSI tasks, including status queries and secure termination.
 
 
 ## ✨ Features
 
-### 🔍 Smart Detection
-- **Pattern-based Detection**: Regex patterns for emails, phones, IDs, and custom formats
-- **Contextual Analysis**: NLP-based identification of sensitive information in context
-- **Custom Rules**: Organization-specific detection patterns and policies
+### 🔐 Secure Multi-Party Collaboration
+- **Privacy-Preserving Set Intersection (PSI)** powered by **SecretFlow SPU**
+- **Dual-Role Execution**：Initiator & Collaborator workflow separation
+- **End-to-End Confidentiality**：No raw data leaves local storage
+- **Metadata-Guided Computation**：Only required columns are exposed
 
-### 🛡️ Multiple Protection Methods
-- **Data Masking**: Partial or full redaction of sensitive fields
-- **Encryption**: AES-256 encryption for reversible protection
-- **Tokenization**: Replace sensitive data with non-sensitive tokens
-- **Format-Preserving**: Maintain data format while protecting content
+#### Supported PSI Protocols
+- **RR22 (Curve25519)** — High performance & scalable  
+- **KKRT** — Efficient OT-based PSI for large datasets  
+- **ECDH** — Broad compatibility fallback
 
-### 📊 Data Format Support
-- **Text Documents**: TXT, PDF, DOCX
-- **Structured Data**: CSV, JSON, XML
-- **Batch Processing**: Directory-level processing for large datasets
-- **Stream Processing**: Real-time data protection for APIs
+### ⚙️ Flexible & Scalable Execution
+- **Dynamic Resource Allocation**：Port & runtime isolation based on Task ID
+- **Parallel Multi-Task Support**：Shared cluster, conflict-free execution
+- **Protocol Agility**：Automatic protocol selection based on workload
 
-## 🏗️ Architecture Overview
+### 📦 Multi-Source Data Integration
+- **Metadata-Driven Data Loading** via Data Trust Manager (DTM)
+- Supports industry databases:
+  - PostgreSQL
+  - MySQL
+- **Standardized export** to SecretFlow-compatible CSV
 
-```mermaid
-graph TD
-    A[Input Data] --> B(PII Detection Engine)
-    B --> C{Redaction Policy}
-    C --> D[Data Masking]
-    C --> E[Encryption]
-    C --> F[Tokenization]
-    D --> G[Redacted Output]
-    E --> G
-    F --> G
-```
+### 📡 API-Level Task Orchestration
+- **Launch PSI Task**
+- **Query Task Status**
+- **Callback Notification**
+- **Forced Task Stop**
+- Full **lifecycle visibility** for enterprise workflows
+
 
 ## 🚀 Installation
 
