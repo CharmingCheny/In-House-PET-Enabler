@@ -65,19 +65,19 @@ Key Capabilities:
 ## 🚀 Installation
 
 ### Prerequisites
-- Python 3.8 or higher
-- 4GB RAM minimum, 8GB recommended
-- 500MB free disk space
+- Python 3.10.18
+- 3.8GB RAM
+- 20GB free disk space
 
 ### Quick Installation
 ```bash
 # Clone the repository (internal network only)
-git clone https://github.internal.com/security/privacy-guard.git
-cd privacy-guard
+cd /export/coding/secretflow_core
+git clone https://github.com/CharmingCheny/In-House-PET-Enabler.git
 
 # Create and activate virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+conda create -n sf python=3.10
+conda activate sf
 
 # Install dependencies
 pip install -r requirements.txt
@@ -89,10 +89,8 @@ python -c "import privacy_guard; print('Installation successful!')"
 ### Docker Installation
 ```bash
 # Pull from internal registry
-docker pull internal.registry.com/security/privacy-guard:latest
 
 # Run container
-docker run -p 8000:8000 -v $(pwd)/data:/app/data privacy-guard
 ```
 
 ## ⚡ Quick Start
@@ -100,37 +98,12 @@ docker run -p 8000:8000 -v $(pwd)/data:/app/data privacy-guard
 ### Command Line Interface
 ```bash
 # Basic file redaction
-python privacy_guard.py redact --input sensitive_data.csv --output redacted_data.csv
-
-# Specific field redaction
-python privacy_guard.py process \
-    --input-dir ./sensitive_docs/ \
-    --output-dir ./protected_docs/ \
-    --fields email,phone,ssn \
-    --method encrypt
-
-# Batch processing with statistics
-python privacy_guard.py batch \
-    --config config.yaml \
-    --stats-dir ./reports/
+python -m uvicorn interface:app --reload --host 0.0.0.0 --port 8000 --workers 1
 ```
 
 ### Python API
 ```python
-from privacy_guard import PrivacyEngine, ProtectionConfig
 
-# Initialize with default configuration
-guard = PrivacyEngine()
-
-# Basic text redaction
-sensitive_text = "Contact John Doe at john.doe@company.com or (555) 123-4567"
-redacted_text = guard.redact_text(sensitive_text)
-print(redacted_text)  # "Contact [REDACTED] at [REDACTED] or [REDACTED]"
-
-# Process DataFrame with specific rules
-import pandas as pd
-df = pd.read_csv('sensitive_data.csv')
-protected_df = guard.protect_dataframe(df, fields=['email', 'phone'])
 ```
 
 ## ⚙️ Configuration
@@ -140,136 +113,176 @@ protected_df = guard.protect_dataframe(df, fields=['email', 'phone'])
 
 ### Environment Variables
 ```bash
-# Required environment variables
-export PG_ENCRYPTION_KEY="your-encryption-key-here"
-export PG_DB_URL="postgresql://user:pass@localhost/privacy_guard"
-export PG_LOG_LEVEL="INFO"
 
-# Optional variables
-export PG_MAX_FILE_SIZE="100MB"
 ```
 
 ## 💻 Usage Examples
 
-### Example 1: Document Redaction
+### Example 1: Launch a PIT Task
 ```python
-from privacy_guard import DocumentProcessor
+import requests
 
-processor = DocumentProcessor("config.yaml")
+url = "http://localhost:8000/SecretFlow/api/v1/pit-tasks"
 
-# Process a single document
-result = processor.process_document(
-    input_path="sensitive_report.pdf",
-    output_path="redacted_report.pdf",
-    methods={"names": "mask", "emails": "encrypt"}
-)
+payload = {
+    "taskId": "task_001",
+    "requesterDataObjectId": "requester_ds_01",
+    "collaboratorDataObjectId": "collaborator_ds_01",
+    "collaboratorFields": ["user_id", "email"],
+    "algorithmSource": "SecretFlow",
+    "algorithmProtocol": "PSI",
+    "algorithmVersion": "v1.0",
+    "logicFormula": "AND",
+    "valueFields": ["score"]
+}
 
-print(f"Redacted {result.fields_redacted} fields")
+response = requests.post(url, json=payload)
+result = response.json()
+
+print(result["message"])
 ```
 
-### Example 2: Database Protection
+### Example 2: Query System Status
 ```python
-from privacy_guard import DatabaseGuard
+import requests
 
-# Protect database columns
-db_guard = DatabaseGuard("postgresql://localhost/mydb")
+url = "http://localhost:8000/SecretFlow/api/v1/status/"
 
-protected_data = db_guard.protect_table(
-    table_name="users",
-    columns=["email", "phone_number", "social_security"],
-    method="tokenize"
-)
+response = requests.get(url)
+status = response.json()
+
+print(f"Capacity: {status['capacity']}")
+print(f"Available Slots: {status['availableTaskNum']}")
+print(f"Running Tasks: {status['runningTasks']}")
 ```
 
-### Example 3: API Integration
+### Example 3: Stop a Running Task
 ```python
-from flask import Flask, request, jsonify
-from privacy_guard import PrivacyEngine
+import requests
 
-app = Flask(__name__)
-guard = PrivacyEngine()
+task_id = "task_001"
+url = f"http://localhost:8000/SecretFlow/api/v1/{task_id}"
 
-@app.route('/api/protect', methods=['POST'])
-def protect_data():
-    data = request.json
-    protected_data = guard.redact_text(data['text'])
-    return jsonify({"protected_text": protected_data})
+response = requests.delete(url)
+result = response.json()
 
-if __name__ == '__main__':
-    app.run(port=8000)
+print(result["message"])
+```
+
+
+### Example 4: PET Task Result Callback
+```python
+import requests
+
+url = "http://localhost:8000/SecretFlow/api/v1/callback"
+
+payload = {
+    "taskId": "task_001",
+    "taskResultStatusCode": "00",
+    "message": "Task executed successfully",
+    "requesterDataObjectId": "requester_ds_01",
+    "collaboratorDataObjectId": "collaborator_ds_01",
+    "collaboratorFields": ["user_id", "email"],
+    "algorithmSource": "SecretFlow",
+    "algorithmProtocol": "PSI",
+    "algorithmVersion": "v1.0",
+    "logicFormula": "AND",
+    "valueFields": ["score"],
+    "resultValueList": [
+        {"user_id": "u001", "resultFlag": True},
+        {"user_id": "u002", "resultFlag": False}
+    ],
+    "totalBlockNums": 1,
+    "currentBlockNum": 1,
+    "currentRecordNums": 2
+}
+
+response = requests.post(url, json=payload)
+result = response.json()
+
+print(result["message"])
 ```
 
 ## 🔌 API Documentation
 
 ### Core Classes
 
-#### PrivacyEngine
-Main class for privacy protection operations.
+#### Launch Task Request
+Data model for launching a Privacy Intersection Task (PIT).
 
 ```python
-class PrivacyEngine:
-    def __init__(self, config_path: str = None):
-        """
-        Initialize PrivacyEngine with optional configuration.
-        
-        Args:
-            config_path: Path to configuration file
-        """
-    
-    def redact_text(self, text: str, methods: dict = None) -> str:
-        """Redact sensitive information from text"""
-        
-    def protect_dataframe(self, df, fields: list, method: str = "mask") -> pd.DataFrame:
-        """Protect sensitive columns in a DataFrame"""
+class LaunchTaskRequest(BaseModel):
+    taskId: str
+    requesterDataObjectId: str
+    collaboratorDataObjectId: str
+    collaboratorFields: List[str]
+    algorithmSource: str
+    algorithmProtocol: str
+    algorithmVersion: str
+    logicFormula: str
+    valueFields: Optional[List[str]] = None
 ```
 
-#### ProtectionConfig
-Configuration management class.
+#### Query Status Response
+System status information model.
 
 ```python
-class ProtectionConfig:
-    def __init__(self, config_dict: dict = None):
-        """Initialize with configuration dictionary"""
-    
-    def validate(self) -> bool:
-        """Validate configuration settings"""
-    
-    def update_pattern(self, pattern_name: str, pattern_config: dict):
-        """Update detection patterns"""
+class QueryStatusResponse(BaseModel):
+    capacity: int
+    availableTaskNum: int
+    runningTasks: List[str]
+```
+
+#### StopTaskResponse
+Response model for stopping a running PIT task.
+
+```python
+class StopTaskResponse(BaseModel):
+    code: str
+    message: str
+    data: dict
+```
+Returned when a task termination request is issued, indicating whether the task
+was successfully stopped or not found.
+
+#### PETTaskCallbackRequest
+Callback payload model for PET task execution results.
+
+```python
+class PETTaskCallbackRequest(BaseModel):
+    taskId: str
+    taskResultStatusCode: str
+    message: str
+    requesterDataObjectId: str
+    collaboratorDataObjectId: str
+    collaboratorFields: List[str]
+    algorithmSource: str
+    algorithmProtocol: str
+    algorithmVersion: str
+    logicFormula: str
+    valueFields: List[str]
+    resultValueList: List[Any]
+    totalBlockNums: int
+    currentBlockNum: int
+    currentRecordNums: int
+
 ```
 
 ### REST API Endpoints
 
 Start the API server:
 ```bash
-python -m privacy_guard.api --port 8000 --host 0.0.0.0
+python -m uvicorn interface:app --reload --host 0.0.0.0 --port 8000 --workers 1
 ```
 
 Available endpoints:
-- `POST /api/v1/redact` - Redact text content
-- `POST /api/v1/batch` - Batch process multiple files
-- `GET /api/v1/health` - Health check
-- `GET /api/v1/stats` - Processing statistics
+- POST /SecretFlow/api/v1/pit-tasks - Launch a new PIT computation task.
+- GET /SecretFlow/api/v1/status/ - Query current system capacity and running task information.
+- DELETE /SecretFlow/api/v1/{task_id} - Stop a running PIT task by task ID.
+- POST /SecretFlow/api/v1/callback - Receive PET task execution results and status callbacks.
 
 ## 🛡️ Security
 
-### Encryption Standards
-- **AES-256-GCM** for strong encryption
-- **Secure Key Management** with regular rotation
-- **TLS 1.3** for all network communications
-- **Secure Defaults** following industry best practices
-
-### Access Control
-- Role-based access control (RBAC) for internal teams
-- Multi-factor authentication support
-- API key management with expiration
-- Audit trails for all operations
-
-### Compliance Features
-- **GDPR Compliance**: Right to be forgotten implementation
-- **HIPAA Support**: Healthcare data protection
-- **Audit Logging**: Comprehensive activity tracking
-- **Data Retention**: Configurable retention policies
 
 ## 🧪 Testing
 
@@ -302,7 +315,7 @@ test:
 ### Development Setup
 ```bash
 # Fork and clone the repository
-git clone https://github.internal.com/your-username/privacy-guard.git
+git clone https://github.com/CharmingCheny/In-House-PET-Enabler.git
 ```
 
 ## 🐛 Troubleshooting
@@ -310,29 +323,29 @@ git clone https://github.internal.com/your-username/privacy-guard.git
 ### Common Issues
 
 **Issue: Permission denied errors**
-```bash
-# Solution: Run with appropriate permissions
-sudo python privacy_guard.py [options]
-# Or add your user to the required groups
-```
+
 
 **Issue: Missing dependencies**
-```bash
-# Solution: Reinstall requirements
-pip install -r requirements.txt
-```
+
 
 **Issue: Configuration errors**
-```bash
-# Solution: Validate config file
-python -m privacy_guard.validate_config config.yaml
-```
+
 
 ### Getting Help
-- **Internal Slack**: `#privacy-tool-support`
-- **Email**: privacy-tool-team@company.com
-- **Emergency**: security-incident@company.com
+- **Internal Slack**: `#secretflow-pit-support`
+- **Email**: 1155243134@link.cuhk.edu.hk
+- **Emergency**: 1155243134@link.cuhk.edu.hk
 
 ## 📄 License
+This project is licensed under the Apache License, Version 2.0.
 
-This tool is proprietary software owned by your organization. Internal use only under the terms of the Internal Software License Agreement.
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
