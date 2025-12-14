@@ -288,26 +288,14 @@ Available endpoints:
 
 ### Running Tests
 ```bash
-# Unit tests
-python -m pytest tests/unit -v
+# Intereface Layer tests
+python test_interface.py
 
-# Integration tests  
-python -m pytest tests/integration/ --test-data=./test_data/
+# Data Preprocessing tests
+python test_preprocess_run.py
 
-# Security tests
-python -m pytest tests/security/ -v
-```
-
-### Test Configuration
-Create `test_config.yaml` for testing:
-
-```yaml
-test:
-  use_mock_data: true
-  sample_data_path: "./test_data/samples/"
-  validation:
-    enabled: true
-    strict_mode: false
+# PSI tests
+python run_psi.py cluster_alice.yaml ./alice1.csv ./bob1.csv ./output/alice1_out.csv ./output/bob1_out.csv id
 ```
 
 ## 🤝 Contributing
