@@ -118,11 +118,11 @@ python -m uvicorn interface:app --reload --host 0.0.0.0 --port 8000 --workers 1
 
 ## 💻 Usage Examples
 
-### Example 1: Launch a PIT Task
+### Example 1: Launch a PET Task
 ```python
 import requests
 
-url = "http://localhost:8000/SecretFlow/api/v1/pit-tasks"
+url = "http://localhost:8000/SecretFlow/api/v1/pet-tasks"
 
 payload = {
     "taskId": "task_001",
@@ -208,7 +208,7 @@ print(result["message"])
 ### Core Classes
 
 #### Launch Task Request
-Data model for launching a Privacy Intersection Task (PIT).
+Data model for launching a PET.
 
 ```python
 class LaunchTaskRequest(BaseModel):
@@ -234,7 +234,7 @@ class QueryStatusResponse(BaseModel):
 ```
 
 #### StopTaskResponse
-Response model for stopping a running PIT task.
+Response model for stopping a running PET task.
 
 ```python
 class StopTaskResponse(BaseModel):
@@ -276,9 +276,9 @@ python -m uvicorn interface:app --reload --host 0.0.0.0 --port 8000 --workers 1
 ```
 
 Available endpoints:
-- POST /SecretFlow/api/v1/pit-tasks - Launch a new PIT computation task.
+- POST /SecretFlow/api/v1/pet-tasks - Launch a new PET computation task.
 - GET /SecretFlow/api/v1/status/ - Query current system capacity and running task information.
-- DELETE /SecretFlow/api/v1/{task_id} - Stop a running PIT task by task ID.
+- DELETE /SecretFlow/api/v1/{task_id} - Stop a running PET task by task ID.
 - POST /SecretFlow/api/v1/callback - Receive PET task execution results and status callbacks.
 
 ## 🛡️ Security
@@ -320,7 +320,7 @@ git clone https://github.com/CharmingCheny/In-House-PET-Enabler.git
 
 
 ### Getting Help
-- **Internal Slack**: `#secretflow-pit-support`
+- **Internal Slack**: `#secretflow-pet-support`
 - **Email**: 1155243134@link.cuhk.edu.hk
 - **Emergency**: 1155243134@link.cuhk.edu.hk
 
