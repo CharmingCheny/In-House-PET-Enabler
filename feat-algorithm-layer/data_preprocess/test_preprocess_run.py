@@ -1,39 +1,62 @@
 #!/usr/bin/env python3
-import time, requests, os, sys
+import os
+import sys
+import subprocess
+import time
+import signal
 
-PREPROCESS_URL = os.getenv("PREPROCESS_URL", "http://127.0.0.1:8000/preprocess/extract")
-CSV_PATH = os.getenv("TEST_CSV_PATH", "/export/coding/data_preprocess/output/employee.csv")
+# This script now tests the CLI mode of preprocess.py, matching the system architecture
+PREPROCESS_SCRIPT = "/export/coding/data_preprocess/preprocess.py"
+CSV_PATH = "/export/coding/secretflow_core/data/test_extract.csv"
 
-payload = {
-    "dataObjectId": "employee_task_1",
-    "fields": ["emp_no", "name", "department", "email", "salary", "hire_date"],
-    "csvPath": os.path.abspath(CSV_PATH)
-}
+# Ensure output dir exists
+os.makedirs(os.path.dirname(CSV_PATH), exist_ok=True)
 
-print("POST", PREPROCESS_URL)
-print("payload:", payload)
+# 1. Start Mock DTM (Required for metadata)
+print("Starting Mock DTM...")
+dtm_process = subprocess.Popen(
+    [sys.executable, "-m", "uvicorn", "data_preprocess.mock_dtm:app", "--host", "127.0.0.1", "--port", "8001"],
+    stdout=subprocess.DEVNULL,
+    stderr=subprocess.DEVNULL
+)
+time.sleep(2) # Wait for startup
+
 try:
-    r = requests.post(PREPROCESS_URL, json=payload, timeout=30)
-except Exception as e:
-    print("Request error:", e); sys.exit(1)
+    print(f"Testing Preprocess CLI...")
+    # Enable Mock DB Failover so we don't need a real DB
+    env = os.environ.copy()
+    env["MOCK_DB_FAILOVER"] = "true"
+    
+    cmd = [
+        sys.executable, PREPROCESS_SCRIPT,
+        "--data_object_id", "test_obj_1",
+        "--fields", "emp_no,name,salary",
+        "--csv_path", CSV_PATH
+    ]
 
-print("Status:", r.status_code)
-try:
-    print("Body:", r.json())
-except:
-    print("Body text:", r.text)
+    print(f"Running command: {' '.join(cmd)}")
 
-if r.status_code != 200:
-    print("Request failed"); sys.exit(2)
+    # Run the command
+    result = subprocess.run(cmd, check=True, capture_output=True, text=True, env=env)
+    print("STDOUT:", result.stdout)
+    print("STDERR:", result.stderr)
+    
+    if os.path.exists(CSV_PATH):
+        print(f"✅ Success! CSV found at: {CSV_PATH}")
+        print("Content preview:")
+        with open(CSV_PATH, "r") as f:
+            print(f.read())
+    else:
+        print(f"❌ Failed! CSV not found at: {CSV_PATH}")
+        sys.exit(1)
 
-out = payload["csvPath"]
-for i in range(20):
-    if os.path.exists(out):
-        break
-    time.sleep(0.5)
-if not os.path.exists(out):
-    print("CSV not found:", out); sys.exit(3)
-
-print("CSV found:", out)
-with open(out, "r", encoding="utf-8") as f:
-    print(f.read())
+except subprocess.CalledProcessError as e:
+    print(f"❌ Execution failed with code {e.returncode}")
+    print("STDOUT:", e.stdout)
+    print("STDERR:", e.stderr)
+    sys.exit(1)
+finally:
+    # Cleanup DTM
+    print("Stopping Mock DTM...")
+    dtm_process.terminate()
+    dtm_process.wait()
