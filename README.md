@@ -1,4 +1,5 @@
-# PrivacyGuard - Internal Data Privacy Protection Tool
+# In House PET Enabler
+
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -81,9 +82,6 @@ conda activate sf
 
 # Install dependencies
 pip install -r requirements.txt
-
-# Verify installation
-python -c "import privacy_guard; print('Installation successful!')"
 ```
 
 ### Docker Installation
