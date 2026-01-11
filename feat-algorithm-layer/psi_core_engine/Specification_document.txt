@@ -1,0 +1,5 @@
+`run_psi.py` needs to be deployed identically on both machines.
+`cluster_alice.yaml` deploys only on the Alice machine.
+`cluster_bob.yaml` deploys only on the Bob machine.
+`run_alice.sh` deploys only on the Alice machine (this file is the starter).
+`run_bob.sh` deploys only on the Bob machine (this file is the starter).
